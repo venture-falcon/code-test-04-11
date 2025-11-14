@@ -57,7 +57,7 @@ If multiple clients apply the same discount concurrently:
 
 ## Requirements
 - Use a persistent database for storing products and discounts (e.g. MongoDB or PostgreSQL).
-  - In-memory solutions (e.g., ConcurrentHashMap) are not allowed. Concurrency must be enforced at the database level.
+  - In-memory solutions (e.g. ConcurrentHashMap) are not allowed. Concurrency must be enforced at the database level.
 - Implement the endpoints described above (GET /products, PUT /products/{id}/discount).
 - Store products and applied discounts.
 - Calculate finalPrice including VAT and discounts.
