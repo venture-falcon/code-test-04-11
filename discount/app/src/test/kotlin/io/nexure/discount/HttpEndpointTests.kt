@@ -28,7 +28,7 @@ import kotlin.test.assertNotNull
 class HttpEndpointTests {
     
     companion object {
-        private val mongoContainer = MongoDBContainer(DockerImageName.parse("mongo:7.0"))
+        private val mongoContainer = MongoDBContainer("mongo:7.0").withExposedPorts(27017)
         
         init {
             mongoContainer.start()
