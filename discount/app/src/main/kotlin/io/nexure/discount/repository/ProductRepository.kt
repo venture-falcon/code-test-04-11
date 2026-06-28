@@ -3,6 +3,9 @@ package io.nexure.discount.repository
 import com.mongodb.client.model.Filters
 import com.mongodb.client.model.IndexOptions
 import com.mongodb.client.model.Indexes
+import com.mongodb.client.model.ReturnDocument
+import com.mongodb.client.model.Updates
+import com.mongodb.client.model.FindOneAndUpdateOptions
 import com.mongodb.kotlin.client.coroutine.MongoClient
 import com.mongodb.kotlin.client.coroutine.MongoDatabase
 import io.nexure.discount.model.Discount
@@ -45,22 +48,26 @@ class ProductRepository(mongoClient: MongoClient, databaseName: String = "produc
     }
     
     suspend fun applyDiscount(productId: String, discount: Discount): Product? {
-        val product = findById(productId) ?: return null
-        
-        val hasDiscount = product.discounts.any { it.discountId == discount.discountId }
-        if (hasDiscount) {
-            return product
-        }
-        
-        // Throttle to prevent MongoDB write overload
-        kotlinx.coroutines.delay(5)
-        
-        val updatedDiscounts = product.discounts + discount
-        val updatedProduct = product.copy(discounts = updatedDiscounts)
-        
-        return save(updatedProduct)
+        val filter = Filters.eq(
+            "id",
+            productId
+        )
+
+        val update = Updates.addToSet(
+            "discounts",
+            discount
+        )
+
+        return collection.findOneAndUpdate(
+            filter,
+            update,
+            FindOneAndUpdateOptions()
+                .returnDocument(
+                    ReturnDocument.AFTER
+                )
+        )
     }
-    
+
     suspend fun deleteAll() {
         collection.drop()
     }
