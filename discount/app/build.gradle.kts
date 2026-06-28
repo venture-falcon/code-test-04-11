@@ -1,5 +1,6 @@
 plugins {
     alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.kotlin.serialization)
     application
 }
 repositories {
@@ -12,6 +13,9 @@ dependencies {
     implementation(libs.bundles.ktor.client)
     testImplementation(libs.bundles.ktor.test)
     testImplementation(kotlin("test"))
+    testImplementation("org.slf4j:slf4j-simple:2.0.12") // Or use logback-classic
+    testImplementation("org.testcontainers:testcontainers:2.0.5")
+    testImplementation("org.testcontainers:mongodb:1.21.4")
 }
 java { toolchain { languageVersion = JavaLanguageVersion.of(21) } }
 application { mainClass = "io.nexure.discount.ApplicationKt" }

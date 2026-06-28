@@ -1,6 +1,7 @@
 [versions]
 jvm = "2.2.20"
 ktor = "3.1.2"
+kotlinx-serialization = "2.2.20"
 reactor_core = "3.7.6"
 coroutines_reactor = "1.10.2"
 testcontainers = "1.20.6"
@@ -52,3 +53,4 @@ ktor-test = [
 ]
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "jvm" }
+kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlinx-serialization" }

@@ -2,12 +2,15 @@ package io.nexure.discount
 
 import com.mongodb.kotlin.client.coroutine.MongoClient
 import io.ktor.http.HttpStatusCode
+import io.ktor.serialization.kotlinx.json.json
 import io.ktor.server.application.Application
 import io.ktor.server.application.ApplicationStarted
 import io.ktor.server.engine.embeddedServer
+import io.ktor.server.application.install
 import io.ktor.server.netty.Netty
 import io.ktor.server.request.receive
 import io.ktor.server.response.respond
+import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.server.routing.get
 import io.ktor.server.routing.put
 import io.ktor.server.routing.routing
@@ -29,6 +32,9 @@ fun main() {
 }
 
 fun Application.module() {
+    install(ContentNegotiation) {
+        json()
+    }
     val mongoConnectionString = environment.config.propertyOrNull("mongodb.uri")?.getString()
         ?: "mongodb://localhost:27017"
     
