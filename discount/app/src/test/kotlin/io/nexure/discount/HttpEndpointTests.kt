@@ -29,12 +29,12 @@ class HttpEndpointTests {
     
     companion object {
         private val mongoContainer = MongoDBContainer(DockerImageName.parse("mongo:7.0"))
-        
+
         init {
             mongoContainer.start()
         }
     }
-    
+
     @Test
     fun `GET products endpoint should return JSON`() = testApplication {
         environment {

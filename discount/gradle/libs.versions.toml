@@ -13,6 +13,7 @@ ktor_server_host_common_jvm = { group = "io.ktor", name = "ktor-server-host-comm
 ktor_server_test_host = { group = "io.ktor", name = "ktor-server-test-host-jvm", version.ref = "ktor" }
 ktor_serialization_kotlinx_json = { group = "io.ktor", name = "ktor-serialization-kotlinx-json", version.ref = "ktor" }
 ktor_server_content_negotiation = { group = "io.ktor", name = "ktor-server-content-negotiation", version.ref = "ktor" }
+ktor_server_status_pages = { group = "io.ktor", name = "ktor-server-status-pages", version.ref = "ktor" }
 ktor_client_okhttp = { group = "io.ktor", name = "ktor-client-okhttp-jvm", version.ref = "ktor" }
 ktor_client_core = { group = "io.ktor", name = "ktor-client-core-jvm", version.ref = "ktor" }
 ktor_client_content_negotiation = { group = "io.ktor", name = "ktor-client-content-negotiation", version.ref = "ktor" }
@@ -36,6 +37,7 @@ ktor-server = [
     "ktor_server_host_common_jvm",
     "ktor_serialization_kotlinx_json",
     "ktor_server_content_negotiation",
+    "ktor_server_status_pages",
 ]
 ktor-client = [
     "ktor_client_core",
@@ -52,3 +54,4 @@ ktor-test = [
 ]
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "jvm" }
+kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "jvm" }

@@ -2,10 +2,14 @@ package io.nexure.discount
 
 import com.mongodb.kotlin.client.coroutine.MongoClient
 import io.ktor.http.HttpStatusCode
+import io.ktor.serialization.kotlinx.json.json
 import io.ktor.server.application.Application
 import io.ktor.server.application.ApplicationStarted
+import io.ktor.server.application.install
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
+import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.server.plugins.statuspages.StatusPages
 import io.ktor.server.request.receive
 import io.ktor.server.response.respond
 import io.ktor.server.routing.get
@@ -35,14 +39,32 @@ fun Application.module() {
     val mongoClient = MongoClient.create(mongoConnectionString)
     val repository = ProductRepository(mongoClient)
     val service = ProductService(repository)
-    
-    // Initialize repository
+
+    install(ContentNegotiation) {
+        json()
+    }
+
+    install(StatusPages) {
+        exception<ValidationException> { call, cause ->
+            call.respond(HttpStatusCode.BadRequest, ErrorResponse("VALIDATION_ERROR", cause.message ?: "Invalid request"))
+        }
+        exception<UnknownCountryException> { call, cause ->
+            call.respond(HttpStatusCode.UnprocessableEntity, ErrorResponse("UNKNOWN_COUNTRY", cause.message ?: "Unknown country"))
+        }
+        exception<DiscountConflictException> { call, cause ->
+            call.respond(HttpStatusCode.Conflict, ErrorResponse("DISCOUNT_CONFLICT", cause.message ?: "Discount conflict"))
+        }
+        exception<kotlinx.serialization.SerializationException> { call, cause ->
+            call.respond(HttpStatusCode.BadRequest, ErrorResponse("MALFORMED_REQUEST", cause.message ?: "Malformed request body"))
+        }
+    }
+
     monitor.subscribe(ApplicationStarted) {
         kotlinx.coroutines.runBlocking {
             repository.init()
         }
     }
-    
+
     routing {
         get(PRODUCTS_ENDPOINT) {
             val country = call.request.queryParameters["country"]
