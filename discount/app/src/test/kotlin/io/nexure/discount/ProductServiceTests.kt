@@ -30,7 +30,7 @@ class ProductServiceTests {
     companion object {
         private val mongoContainer = MongoDBContainer(DockerImageName.parse("mongo:7.0"))
         private lateinit var mongoClient: MongoClient
-        
+
         init {
             mongoContainer.start()
             mongoClient = MongoClient.create(mongoContainer.connectionString)

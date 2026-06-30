@@ -14,4 +14,6 @@ object VatConfig {
     fun getVatRate(country: String): Double {
         return vatRates[country] ?: 0.0
     }
+
+    fun isKnownCountry(country: String): Boolean = vatRates.containsKey(country)
 }
