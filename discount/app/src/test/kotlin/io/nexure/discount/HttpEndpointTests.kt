@@ -82,6 +82,69 @@ class HttpEndpointTests {
         assertEquals(HttpStatusCode.NotFound, response.status,
             "Should return 404 for non-existent product.")
     }
+
+    @Test
+    fun `PUT discount endpoint should reject blank discount id`() = testApplication {
+        environment {
+            config = MapApplicationConfig("mongodb.uri" to mongoContainer.connectionString)
+        }
+        application {
+            module()
+        }
+
+        val client = createClient {
+            install(ContentNegotiation) {
+                json()
+            }
+        }
+
+        val response = client.put("/products/test-id/discount") {
+            contentType(ContentType.Application.Json)
+            setBody(ApplyDiscountRequest("", 10.0))
+        }
+
+        assertEquals(HttpStatusCode.BadRequest, response.status)
+    }
+
+    @Test
+    fun `PUT discount endpoint should reject invalid discount percent`() = testApplication {
+        environment {
+            config = MapApplicationConfig("mongodb.uri" to mongoContainer.connectionString)
+        }
+        application {
+            module()
+        }
+
+        val client = createClient {
+            install(ContentNegotiation) {
+                json()
+            }
+        }
+
+        val response = client.put("/products/test-id/discount") {
+            contentType(ContentType.Application.Json)
+            setBody(ApplyDiscountRequest("INVALID", -1.0))
+        }
+
+        assertEquals(HttpStatusCode.BadRequest, response.status)
+    }
+
+    @Test
+    fun `PUT discount endpoint should reject missing discount percent`() = testApplication {
+        environment {
+            config = MapApplicationConfig("mongodb.uri" to mongoContainer.connectionString)
+        }
+        application {
+            module()
+        }
+
+        val response = client.put("/products/test-id/discount") {
+            contentType(ContentType.Application.Json)
+            setBody("""{"discountId":"INVALID"}""")
+        }
+
+        assertEquals(HttpStatusCode.BadRequest, response.status)
+    }
     
     @Test
     fun `should return 400 when country parameter is missing`() = testApplication {

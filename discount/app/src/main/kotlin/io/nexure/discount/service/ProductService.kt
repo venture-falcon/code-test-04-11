@@ -12,8 +12,19 @@ class ProductService(private val repository: ProductRepository) {
     suspend fun getProductsByCountry(country: String): List<ProductResponse> =
         repository.findByCountry(country).map { it.toProductResponse() }
 
-    suspend fun applyDiscount(productId: String, discount: Discount): ProductResponse? =
-        repository.applyDiscount(productId, discount)?.toProductResponse()
+    suspend fun applyDiscount(productId: String, discount: Discount): ProductResponse? {
+        validateDiscount(discount)
+        return repository.applyDiscount(productId, discount)?.toProductResponse()
+    }
+
+    private fun validateDiscount(discount: Discount) {
+        require(discount.discountId.isNotBlank()) {
+            "discountId must not be blank"
+        }
+        require(discount.percent > 0.0 && discount.percent <= 100.0) {
+            "percent must be greater than 0 and less than or equal to 100"
+        }
+    }
 
     private fun Product.toProductResponse(): ProductResponse = ProductResponse(
         id = id,
@@ -26,7 +37,10 @@ class ProductService(private val repository: ProductRepository) {
 
     private fun Product.calculateFinalPrice(): Double {
         val vatRate = VatConfig.getVatRate(country)
-        val totalDiscountPercent = discounts.sumOf { it.percent / 100.0 }
-        return basePrice * (1 - totalDiscountPercent) * (1 + vatRate)
+        val discountedPrice = discounts.fold(basePrice) { price, discount ->
+            price * (1 - discount.percent / 100.0)
+        }
+
+        return discountedPrice * (1 + vatRate)
     }
 }

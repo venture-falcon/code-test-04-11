@@ -15,6 +15,7 @@ import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
@@ -225,6 +226,33 @@ class ProductServiceTests {
         
         // Assert
         assertNull(result, "Should return null for non-existent product")
+    }
+
+    @Test
+    fun `should reject blank discount id`() = runBlocking {
+        val error = assertFailsWith<IllegalArgumentException> {
+            service.applyDiscount("prod-invalid", Discount("", 10.0))
+        }
+
+        assertEquals("discountId must not be blank", error.message)
+    }
+
+    @Test
+    fun `should reject zero negative and above one hundred discount percentages`() = runBlocking {
+        val zeroPercentError = assertFailsWith<IllegalArgumentException> {
+            service.applyDiscount("prod-invalid", Discount("ZERO", 0.0))
+        }
+        assertEquals("percent must be greater than 0 and less than or equal to 100", zeroPercentError.message)
+
+        val negativePercentError = assertFailsWith<IllegalArgumentException> {
+            service.applyDiscount("prod-invalid", Discount("NEGATIVE", -1.0))
+        }
+        assertEquals("percent must be greater than 0 and less than or equal to 100", negativePercentError.message)
+
+        val highPercentError = assertFailsWith<IllegalArgumentException> {
+            service.applyDiscount("prod-invalid", Discount("HIGH", 100.1))
+        }
+        assertEquals("percent must be greater than 0 and less than or equal to 100", highPercentError.message)
     }
     
     @Test

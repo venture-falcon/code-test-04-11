@@ -3,6 +3,8 @@ package io.nexure.discount.repository
 import com.mongodb.client.model.Filters
 import com.mongodb.client.model.IndexOptions
 import com.mongodb.client.model.Indexes
+import com.mongodb.client.model.ReplaceOptions
+import com.mongodb.client.model.Updates
 import com.mongodb.kotlin.client.coroutine.MongoClient
 import com.mongodb.kotlin.client.coroutine.MongoDatabase
 import io.nexure.discount.model.Discount
@@ -22,17 +24,12 @@ class ProductRepository(mongoClient: MongoClient, databaseName: String = "produc
     }
     
     suspend fun save(product: Product): Product {
-        val filter = Filters.eq("id", product.id)
-        val existing = collection.find(filter).firstOrNull()
-        
-        if (existing != null) {
-            // Update existing product
-            collection.replaceOne(filter, product)
-        } else {
-            // Insert new product
-            collection.insertOne(product)
-        }
-        
+        collection.replaceOne(
+            Filters.eq("id", product.id),
+            product,
+            ReplaceOptions().upsert(true)
+        )
+
         return product
     }
     
@@ -45,20 +42,15 @@ class ProductRepository(mongoClient: MongoClient, databaseName: String = "produc
     }
     
     suspend fun applyDiscount(productId: String, discount: Discount): Product? {
-        val product = findById(productId) ?: return null
-        
-        val hasDiscount = product.discounts.any { it.discountId == discount.discountId }
-        if (hasDiscount) {
-            return product
-        }
-        
-        // Throttle to prevent MongoDB write overload
-        kotlinx.coroutines.delay(5)
-        
-        val updatedDiscounts = product.discounts + discount
-        val updatedProduct = product.copy(discounts = updatedDiscounts)
-        
-        return save(updatedProduct)
+        collection.updateOne(
+            Filters.and(
+                Filters.eq("id", productId),
+                Filters.ne("discounts.discountId", discount.discountId)
+            ),
+            Updates.push("discounts", discount)
+        )
+
+        return findById(productId)
     }
     
     suspend fun deleteAll() {

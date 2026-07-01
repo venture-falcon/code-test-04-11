@@ -2,10 +2,13 @@ package io.nexure.discount
 
 import com.mongodb.kotlin.client.coroutine.MongoClient
 import io.ktor.http.HttpStatusCode
+import io.ktor.serialization.kotlinx.json.json
 import io.ktor.server.application.Application
 import io.ktor.server.application.ApplicationStarted
+import io.ktor.server.application.install
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
+import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.server.request.receive
 import io.ktor.server.response.respond
 import io.ktor.server.routing.get
@@ -15,6 +18,7 @@ import io.nexure.discount.model.ApplyDiscountRequest
 import io.nexure.discount.model.Discount
 import io.nexure.discount.repository.ProductRepository
 import io.nexure.discount.service.ProductService
+import kotlinx.serialization.json.Json
 
 const val PRODUCTS_ENDPOINT = "/products"
 const val PRODUCT_DISCOUNT_ENDPOINT = "/products/{id}/discount"
@@ -29,6 +33,14 @@ fun main() {
 }
 
 fun Application.module() {
+    install(ContentNegotiation) {
+        json(
+            Json {
+                ignoreUnknownKeys = true
+            }
+        )
+    }
+
     val mongoConnectionString = environment.config.propertyOrNull("mongodb.uri")?.getString()
         ?: "mongodb://localhost:27017"
     
@@ -63,8 +75,13 @@ fun Application.module() {
             }
             
             val request = call.receive<ApplyDiscountRequest>()
-            val product = service.applyDiscount(productId, Discount(request.discountId, request.percent))
-            
+            val product = try {
+                service.applyDiscount(productId, Discount(request.discountId, request.percent))
+            } catch (e: IllegalArgumentException) {
+                call.respond(HttpStatusCode.BadRequest, e.message ?: "Invalid discount request")
+                return@put
+            }
+
             if (product == null) {
                 call.respond(HttpStatusCode.NotFound, "Product not found")
             } else {
