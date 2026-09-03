@@ -23,10 +23,13 @@ class ProductService(private val repository: ProductRepository) {
         discounts = discounts.map { DiscountResponse(it.discountId, it.percent) },
         finalPrice = calculateFinalPrice()
     )
-
+    //Bug: discounts were added on top of another which was causing test failure, we need to add the discounts separately
+    // on the base price so that the final price is obtained instead of just adding all the prices at once
     private fun Product.calculateFinalPrice(): Double {
         val vatRate = VatConfig.getVatRate(country)
-        val totalDiscountPercent = discounts.sumOf { it.percent / 100.0 }
-        return basePrice * (1 - totalDiscountPercent) * (1 + vatRate)
+        val discountedPrice=discounts.fold(basePrice){
+            price, discount ->price * (1-discount.percent/100)
+        }
+        return discountedPrice * (1+vatRate)
     }
 }
