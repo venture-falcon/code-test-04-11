@@ -24,11 +24,13 @@ reactor_test = { group = "io.projectreactor", name = "reactor-test", version.ref
 testcontainer_kafka = { group = "org.testcontainers", name = "kafka", version.ref = "testcontainers" }
 testcontainer_mongo = { group = "org.testcontainers", name = "mongodb", version.ref = "testcontainers" }
 mockk = { group = "io.mockk", name = "mockk", version.ref = "mockk" }
+kotlinx_serialization_json = {group= "org.jetbrains.kotlinx", name="kotlinx-serialization-json", version.ref="kotlinx_serialization_json"}
 [bundles]
 common = [
     "reactor_core",
     "kotlinx_coroutines_reactor",
     "mongodb_driver_kotlin_coroutine",
+    "kotlinx_serialization_json",
 ]
 ktor-server = [
     "ktor_server_core_jvm",
@@ -52,3 +54,4 @@ ktor-test = [
 ]
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "jvm" }
+kotlin-serialization={id="org.jetbrains.kotlin.plugin.serialization", version.ref="jvm"}
