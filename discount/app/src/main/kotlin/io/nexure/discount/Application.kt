@@ -15,6 +15,9 @@ import io.nexure.discount.model.ApplyDiscountRequest
 import io.nexure.discount.model.Discount
 import io.nexure.discount.repository.ProductRepository
 import io.nexure.discount.service.ProductService
+import io.ktor.serialization.kotlinx.json.json
+import io.ktor.server.application.install
+import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
 
 const val PRODUCTS_ENDPOINT = "/products"
 const val PRODUCT_DISCOUNT_ENDPOINT = "/products/{id}/discount"
@@ -35,7 +38,11 @@ fun Application.module() {
     val mongoClient = MongoClient.create(mongoConnectionString)
     val repository = ProductRepository(mongoClient)
     val service = ProductService(repository)
-    
+
+    install(ContentNegotiation){
+        json()
+    }
+
     // Initialize repository
     monitor.subscribe(ApplicationStarted) {
         kotlinx.coroutines.runBlocking {
